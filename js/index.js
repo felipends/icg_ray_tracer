@@ -132,6 +132,13 @@ class Esfera {
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Classe que representa uma primitiva do tipo triangulo.
+// Construtor: 
+//   vertice0: Coordenadas de um vértice do triângulo no espaco do universo (THREE.Vector3).
+//   vertice1: Coordenadas de um vértice do triângulo no espaco do universo (THREE.Vector3).
+//   vertice2: Coordenadas de um vértice do triângulo no espaco do universo (THREE.Vector3).
+///////////////////////////////////////////////////////////////////////////////
 class Triangulo {
     constructor(vertice0, vertice1, vertice2) {
         this.vertice0 = vertice0;
@@ -139,6 +146,14 @@ class Triangulo {
         this.vertice2 = vertice2;
     }
 
+    ///////////////////////////////////////////////////////////////////////////////
+    // Metodo que testa a interseccao entre o raio e o triangulo.
+    // Entrada: 
+    //   raio: Objeto do tipo Raio cuja a interseccao com o triangulo se quer verificar.
+    //   interseccao: Objeto do tipo Interseccao que armazena os dados da interseccao caso esta ocorra.
+    // Retorno:
+    //   Um valor booleano: 'true' caso haja interseccao; ou 'false' caso contrario.
+    ///////////////////////////////////////////////////////////////////////////////
     interseccionar(raio, interseccao) {
         // arestas a partir do vertice 0
         let aresta0 = this.vertice1.clone().sub(this.vertice0);
@@ -166,8 +181,10 @@ class Triangulo {
         if (v < 0.0 || u + v > 1.0)
             return false;
 
+        // calculo da posição da intersecção
         interseccao.t = aresta1.clone().dot(qvec) * inv_det;
         interseccao.posicao = raio.origem.clone().add(raio.direcao.clone().multiplyScalar(interseccao.t));
+        // calculo da normal da intersecção
         interseccao.normal = aresta0.clone().cross(aresta1).negate().normalize();
 
         return true;
@@ -225,9 +242,9 @@ function Render() {
                 let termo_difuso = (Ip.cor.clone().multiply(kd)).multiplyScalar(Math.max(0.0, interseccao.normal.dot(L)));
 
                 // Calculo do termo especular
-                let R = L.clone().reflect(interseccao.normal).normalize(); // Vetor de reflexão da luz.
+                let R = L.clone().reflect(interseccao.normal).negate().normalize(); // Vetor de reflexão da luz.
                 let V = interseccao.posicao.clone().negate().normalize();  // Vetor que aponta para a câmera (que encontra-se na origem).
-                let termo_especular = Ip.cor.clone().multiply(ks).multiplyScalar(Math.pow(Math.max(0.0, V.dot(R.negate())), n));
+                let termo_especular = Ip.cor.clone().multiply(ks).multiplyScalar(Math.pow(Math.max(0.0, V.dot(R)), n));
 
                 PutPixel(x, y, termo_difuso.add(termo_ambiente).add(termo_especular)); // Combina os termos difuso e ambiente e pinta o pixel.
             } else // Senao houver interseccao entao...
